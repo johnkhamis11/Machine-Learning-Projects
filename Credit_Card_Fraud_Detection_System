@@ -1,0 +1,69 @@
+# 💳 Credit Card Fraud Detection System
+
+A Machine Learning project focused on detecting fraudulent credit card transactions using classification algorithms and advanced data preprocessing techniques.
+
+---
+
+## 📌 Problem Overview
+
+Credit card fraud causes significant financial losses worldwide.  
+The challenge lies in detecting fraudulent transactions from highly imbalanced datasets where fraud cases represent only a small percentage of total transactions.
+
+This project builds a classification model to accurately identify fraudulent transactions while minimizing false negatives.
+
+---
+
+## 📊 Dataset Information
+
+- Highly imbalanced dataset
+- Contains anonymized transaction features
+- Target variable:
+  - 0 → Legitimate transaction
+  - 1 → Fraudulent transaction
+
+---
+
+## ⚙️ Project Workflow
+
+1. Data Exploration & Visualization  
+2. Data Cleaning  
+3. Handling Class Imbalance  
+4. Model Training  
+5. Model Evaluation  
+
+---
+
+## 🧠 Models Used
+
+- Logistic Regression  
+
+---
+
+## 📈 Evaluation Metrics
+
+Since fraud detection is a sensitive problem, the following metrics were used:
+
+- Precision  
+- Recall  
+- F1-Score  
+- Confusion Matrix  
+
+Special focus was placed on **Recall**, to reduce false negatives.
+
+---
+
+## 🛠️ Technologies & Libraries
+
+- Python  
+- Pandas  
+- NumPy  
+- Scikit-learn  
+- Matplotlib  
+- Seaborn  
+
+---
+
+## 👨‍💻 Author
+
+John Khamis  
+AI Student | Machine Learning Enthusiast
