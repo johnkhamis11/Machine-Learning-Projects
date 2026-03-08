@@ -3,7 +3,7 @@
 Welcome to my comprehensive portfolio of Machine Learning and Data Science projects. This repository serves as a centralized hub for various AI solutions, ranging from high-precision regression models to complex classification systems and unsupervised learning clusters.
 
 ## 🌟 Portfolio Highlights
-- **Project Count:** 20 End-to-End Projects.
+- **Project Count:** 17 End-to-End Projects.
 - **Specializations:** Computer Vision (CV), Natural Language Processing (NLP), and Predictive Analytics.
 - **Top Accuracy:** Achieved **R² Score of 0.999** in multiple regression tasks.
 - **Deployment Ready:** Most projects include exported models (`.joblib`/`.pkl`) ready for integration.
