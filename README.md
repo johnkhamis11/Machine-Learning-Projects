@@ -4,7 +4,7 @@ Welcome to my comprehensive portfolio of Machine Learning and Data Science proje
 
 ## 🌟 Portfolio Highlights
 - **Project Count:** 17 End-to-End Projects.
-- **Specializations:** Computer Vision (CV), Natural Language Processing (NLP), and Predictive Analytics.
+- **Specializations:** Classification, Regression, and Predictive Analytics.
 - **Top Accuracy:** Achieved **R² Score of 0.999** in multiple regression tasks.
 - **Deployment Ready:** Most projects include exported models (`.joblib`/`.pkl`) ready for integration.
 
