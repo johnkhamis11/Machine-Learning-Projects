@@ -1,47 +1,47 @@
-# Handwritten Digits Clustering: KMeans vs Gaussian Mixture vs Hierarchical
+# Penguin Clustering: KMeans vs Hierarchical vs DBSCAN
 
-Unsupervised grouping of 1,797 handwritten digit images into 10 clusters, without ever using the labels for training. PCA reduces the dimensions before clustering, and t-SNE is used to visualize the result. The real digits are used only at the end to check how well each algorithm recovered them.
+Unsupervised grouping of penguins by their body measurements, comparing three clustering algorithms: KMeans, Agglomerative (Hierarchical) Clustering, and DBSCAN. The real species are held back during training and used only at the end to check the results.
 
 ## Overview
 
-Can an algorithm discover digits just by looking at pixels? This project clusters small 8×8 images with three different algorithms and checks the groups in three ways: internal metrics, visual inspection (t-SNE plots and cluster centroid images), and agreement with the true digits.
+Different clustering algorithms make different assumptions. KMeans and Ward hierarchical clustering look for compact, round groups, while DBSCAN finds dense regions and labels sparse points as noise. This project runs all three on the same scaled data and compares them with internal metrics and against the known species.
 
 ## Dataset
 
 | Item | Details |
 |---|---|
-| Name | Optical Recognition of Handwritten Digits (UCI) |
-| Source | `sklearn.datasets.load_digits` (built in, no internet needed) |
-| Samples | 1,797 images, 8×8 grayscale |
-| Features | 64 pixel values (0 to 16) |
-| Real classes | 10 digits (about 180 images each), **not used for training** |
-| Missing values | None |
+| Name | Palmer Penguins |
+| Source | `seaborn.load_dataset('penguins')` (internet required) |
+| Samples | 344 penguins, 333 after dropping rows with missing values |
+| Features used | `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `body_mass_g` |
+| Real classes | 3 species: Adelie (152), Gentoo (124), Chinstrap (68), **not used for training** |
+| Missing values | 2 rows have no measurements; 11 rows have no `sex` value |
+
+After cleaning, 333 penguins remain: 146 Adelie, 119 Gentoo, and 68 Chinstrap.
 
 ## Project Workflow
 
 1. **Importing libraries** and fixing the random seed.
-2. **Exploratory Data Analysis**: shapes, pixel range, summary statistics, duplicates, missing values, digit counts.
-3. **Data visualization**: sample digits, real digit distribution, the average image of each digit, and the average pixel intensity map.
-4. **Data preprocessing**:
-   - Scale pixels to [0, 1].
-   - Cumulative explained variance plot, then PCA keeping 95% of the variance (64 features reduced to 29).
-   - t-SNE projection to 2D for plotting.
-5. **Finding the best K**: KMeans for K = 2 to 15 with Inertia and Silhouette (Elbow and Silhouette plots).
-6. **KMeans** with 10 clusters.
-7. **Gaussian Mixture Model** with 10 components.
-8. **Hierarchical clustering** (Ward linkage) with 10 clusters.
-9. **Evaluating the clusters**: t-SNE plots of the real digits and the three clusterings, KMeans centroid images (what each cluster "looks like"), and a heatmap of real digit vs. cluster.
-10. **Model comparison**: one table and a bar plot.
+2. **Exploratory Data Analysis**: shape, data types, summary statistics, duplicates, missing values, species counts.
+3. **Data visualization**: feature histograms, correlation heatmap, pair plot.
+4. **Data preprocessing**: drop missing rows, `StandardScaler`, and a 2-component PCA for plotting (the two components keep 88.1% of the variance: 68.6% + 19.5%).
+5. **KMeans**: Elbow and Silhouette plots for K = 2 to 8, then K = 3.
+6. **Hierarchical clustering**: dendrogram (Ward linkage), then 3 clusters.
+7. **DBSCAN**: K-distance graph to guide `eps`, then `eps = 0.6` and `min_samples = 5`.
+8. **Evaluating the clusters**: PCA plots of the real species and the three clusterings, KMeans cluster profiles, and cross-tabulations against species.
+9. **Model comparison**: one table and a bar plot.
 
 ## Algorithm Settings
 
 | Algorithm | Settings |
 |---|---|
-| KMeans | `n_clusters=10`, `n_init=10`, `random_state=42` |
-| Gaussian Mixture | `n_components=10`, `covariance_type='full'`, `random_state=42` |
-| Hierarchical | `AgglomerativeClustering`, `n_clusters=10`, Ward linkage |
+| KMeans | `n_clusters=3`, `n_init=10`, `random_state=42` |
+| Hierarchical | `AgglomerativeClustering`, `n_clusters=3`, Ward linkage |
+| DBSCAN | `eps=0.6`, `min_samples=5` |
 
-All three run on the 29-dimensional PCA representation.
+**Choosing K for KMeans.** The Elbow curve bends clearly at K = 3. The Silhouette score is highest at K = 2 (about 0.53) and decreases as K grows. K = 3 is used because it matches the elbow and the three real species.
+
+**Choosing `eps` for DBSCAN.** The K-distance graph rises slowly until about 0.6 and then climbs sharply, so 0.6 is used as the neighborhood radius.
 
 ## Evaluation Metrics
 
@@ -50,51 +50,72 @@ All three run on the 29-dimensional PCA representation.
 | Silhouette | Internal | Higher (max 1) |
 | Davies-Bouldin | Internal | Lower |
 | Calinski-Harabasz | Internal | Higher |
-| Adjusted Rand Index (ARI) | External (uses real digits) | Higher (max 1) |
-| Normalized Mutual Information (NMI) | External (uses real digits) | Higher (max 1) |
+| Adjusted Rand Index (ARI, vs. species) | External | Higher (max 1) |
+
+For DBSCAN, the internal metrics are computed on non-noise points only. The ARI is computed on all points, with noise treated as its own group.
 
 ## Results
 
-| Model | Silhouette | Davies-Bouldin | Calinski-Harabasz | ARI | NMI |
+| Model | Clusters | Noise Points | Silhouette | Davies-Bouldin | Calinski-Harabasz | ARI (vs. species) |
+|---|---|---|---|---|---|---|
+| DBSCAN | 2 | 32 | 0.557 | 0.672 | 498.5 | 0.579 |
+| Hierarchical | 3 | 0 | 0.452 | 0.850 | 408.2 | **0.913** |
+| KMeans | 3 | 0 | 0.446 | 0.942 | 427.8 | 0.799 |
+
+### How each cluster matches the real species
+
+| Species | KMeans (C0 / C1 / C2) | Hierarchical (C0 / C1 / C2) | DBSCAN (noise / C0 / C1) |
+|---|---|---|---|
+| Adelie | 124 / 0 / 22 | 0 / 146 / 0 | 15 / 131 / 0 |
+| Chinstrap | 5 / 0 / 63 | 0 / 11 / 57 | 10 / 58 / 0 |
+| Gentoo | 0 / 119 / 0 | 119 / 0 / 0 | 7 / 0 / 112 |
+
+### KMeans cluster profiles (mean of each feature)
+
+| Cluster | Bill length (mm) | Bill depth (mm) | Flipper length (mm) | Body mass (g) | Mostly |
 |---|---|---|---|---|---|
-| Hierarchical | 0.192 | 1.850 | 172.8 | 0.743 | 0.828 |
-| Gaussian Mixture | 0.189 | 1.901 | 178.8 | 0.696 | 0.782 |
-| KMeans | 0.195 | 1.840 | 184.4 | 0.662 | 0.738 |
+| 0 | 38.3 | 18.1 | 188.6 | 3,594 | Adelie |
+| 1 | 47.6 | 15.0 | 217.2 | 5,092 | Gentoo |
+| 2 | 47.7 | 18.7 | 196.9 | 3,898 | Chinstrap |
 
-Results from one run with `random_state=42`; small differences are possible across library versions.
+## Key Findings
 
-An interesting observation: the internal metrics (Silhouette, Davies-Bouldin, Calinski-Harabasz) slightly favor KMeans, while the external metrics (ARI, NMI) favor Hierarchical clustering. Internal metrics measure how compact and separated the clusters are, not whether they match the real digits, so the two views can disagree. In the K sweep, the Silhouette score peaks at K = 9 (about 0.20) and then stays roughly flat between 0.19 and 0.20 up to K = 15, so the Elbow and Silhouette plots do not point clearly to 10 by themselves. K = 10 is used because the data contains 10 digits.
+- **Gentoo penguins are easy to separate.** Every algorithm keeps them apart from the other species. They have the longest flippers and the heaviest bodies.
+- **Hierarchical clustering matches the species best** (ARI 0.913): only 11 Chinstrap penguins fall into the Adelie cluster.
+- **KMeans is less accurate on the Adelie/Chinstrap boundary** (ARI 0.799): 22 Adelie and 5 Chinstrap penguins land in the wrong cluster, because these two species overlap in their measurements.
+- **DBSCAN has the best internal scores but the lowest ARI.** It finds only 2 clusters: Adelie and Chinstrap merge into one dense region, and Gentoo forms the other. It also leaves 32 points as noise, which are excluded from its internal metrics, so its scores are not directly comparable with the other two models.
+- **Internal and external metrics can disagree.** A high Silhouette score means compact, well-separated groups, not groups that match the real species.
 
 ## Tech Stack
 
-Python · scikit-learn · NumPy · Pandas · Matplotlib · Seaborn · joblib
+Python · scikit-learn · SciPy · NumPy · Pandas · Matplotlib · Seaborn · joblib
 
 ## Getting Started
 
 ```bash
-pip install numpy pandas matplotlib seaborn scikit-learn joblib
+pip install numpy pandas matplotlib seaborn scikit-learn scipy joblib
 ```
 
-Open `Digits_Clustering_KMeans_GMM_Hierarchical.ipynb` in Jupyter or [Google Colab](https://colab.research.google.com/) and run all cells. No GPU or internet connection is needed.
+Open `Penguins_Clustering_KMeans_Hierarchical_DBSCAN.ipynb` in Jupyter or [Google Colab](https://colab.research.google.com/) and run all cells. No GPU is needed; an internet connection is required to load the dataset.
 
 ## Project Structure
 
 ```
 .
-├── Digits_Clustering_KMeans_GMM_Hierarchical.ipynb
+├── Penguins_Clustering_KMeans_Hierarchical_DBSCAN.ipynb
 └── README.md
 ```
 
 ## What This Project Demonstrates
 
-- Reducing dimensions with PCA before clustering, and choosing the number of components from explained variance.
-- Visualizing high-dimensional clusters with t-SNE.
-- Interpreting a cluster by looking at its centroid image.
-- Comparing algorithms with both internal and external metrics, and understanding why they can disagree.
+- How different clustering algorithms behave on the same data.
+- Reading a dendrogram and a K-distance graph to choose parameters.
+- Evaluating clusters both internally and against known labels, and why the two can disagree.
+- Handling noise points explicitly with DBSCAN.
 
 ## Possible Improvements
 
-- Choose the number of Gaussian components with BIC or AIC.
-- Try DBSCAN or Spectral Clustering.
-- Repeat the experiment on the larger MNIST dataset (28×28 images).
-- Use a CNN autoencoder to learn features before clustering.
+- Search `eps` and `min_samples` systematically for DBSCAN.
+- Add Gaussian Mixture Models and compare.
+- Include categorical features (island, sex) with a suitable encoding.
+- Visualize clusters with t-SNE or UMAP in addition to PCA.
